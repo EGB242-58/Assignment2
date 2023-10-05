@@ -49,19 +49,28 @@ ylabel('Amplitude')
 title('The noise in the Frequency domain of the new created matrix Image1')
 
 %% Finding a Filter to remove the noise
+%% o+jw = s
+s = 1j.*2.*pi.*f;
+
 %Passive values
 R1 = 1200; %Ohms
 R2 = 1000; %Ohms
 C1 = 10*10^-6; %Faradays
 C2 = 4.7*10^-6; %Faradays
 
-%????
+%Passive filters ??Maybe its right
+pass1in = (C2.* C1.* R1.* s) + (C2.* C1.* R2.* s) + C1 + C2;
+pass1out = (C2.* C1.* R2.* s) + C1;
+Passfilter1 = pass1out./pass1in;
+pass2in = (C1.*(C2.*(R1 + R2).*s + 1)+ C2);
+pass2out = C1+C2;
+Passfilter2 = pass2out./pass2in;
 
 %Active values
 C = 1*10^-6; %Faradays
 R = 820; %Ohms
 
-s = 1j.*2.*pi.*f;
+%Active Filters
 vout1 = 1/ (R.*C).^2;
 vin1 = s.^2 + (2.*s)./(R.*C) + 1/(R.*C).^2;
 vout2 = s.^2;
@@ -89,6 +98,31 @@ xlim([0,300]);
 xlabel('Time');
 ylabel('Amplitude');
 title('Time Domain of the first Filtered Image');
+
+%passive filters test
+pCleanImage1 = Image1 .* Passfilter1;
+figure, plot(f,abs(pCleanImage1));
+xlabel('Frequency');
+ylabel('Amplitude');
+title('Frequency Domain of the first Filtered Image pass');
+%reshaping from string to 480 by 640 and displaying image
+%CleanIm1d = ifft(ifftshift(CleanImage1)) * fs;
+pCleanIm1d = ifft(ifftshift(pCleanImage1)) * fs; % was moved into Freq Domain 
+%forgraphing, needs to be ing time for image
+
+pcleanIm1d_new = reshape(pCleanIm1d, [480,640]);
+figure;
+imshow(real(pcleanIm1d_new));
+title('De-Noised Image 1 pass');
+figure;
+plot(t,abs(pCleanIm1d));
+xlim([0,300]);
+xlabel('Time');
+ylabel('Amplitude');
+title('Time Domain of the first Filtered Image pass');
+%%end passive filter test
+
+
 % the clipping at a amplitude of zero tells us that there are values 
 %cleanImg that are in the imaginary region.
 
@@ -117,6 +151,3 @@ cleanIm4d_new = reshape(CleanIm4d, [480,640]);
 figure;
 imshow(real(cleanIm4d_new));
 title('De-Noised Image 4');
-
-
-
