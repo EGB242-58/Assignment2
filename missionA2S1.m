@@ -9,9 +9,15 @@ clear all; close all;
 load DataA2 audioMultiplexNoisy fs sid;
 
 % Begin writing your MATLAB solution below this line.
+%% Initialise workspace
+clear all; close all;
+load DataA2 audioMultiplexNoisy fs sid;
+
+% Begin writing your MATLAB solution below this line.
 %1.1 Time and frequency domains of audioMultiplexNoisy
 
 t0 = 0; T = 20; 
+samples = length(audioMultiplexNoisy);
 
 t = linspace(t0, t0+T, (fs*T) + 1);
 t(end) =[];
@@ -36,7 +42,7 @@ xlabel ('Frequency [kHz]');
 ylabel ('Magnitude');
 
 
-%%1.2 demodulate
+%% 2.2 demodulate
 fdemod1 = 8030; %frequency tuning in Hz,Audio signals within signal = 8030Hz, 24220Hz, 40250, 56050Hz, 72170Hz
                 %noisy frequencies within Multiplex audio frequencies = 5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz
 low = 1000; %lowpass filter bounds Hz
@@ -149,9 +155,79 @@ xlabel ('Frequency [kHz]');
 ylabel ('Amplitude');
 xlim([-low/1000,low/1000]);
 
-%2.3 Need to do!!
-%not needed!!
-%X=2*ones(size(audioMultiplexNoisy)); 
-%audioSignal4s = audioSignal4 - X;
+%% 1.3
+ts = 1/fs;
+impulse = [fs, zeros(1, samples -1)];
 
-%2.4 Need to do!!
+impulseResp1 = channel(sid, impulse, fs);
+
+
+impulserespfreq = fftshift(fft(impulseResp1))/fs;
+
+% plot the inpulse response of the channel
+figure();
+subplot(2, 1, 1);
+plot(t, impulseResp1);
+hold on;
+plot(t, impulse);
+title('Time domain of the inpulse response')
+xlabel ('Time (s)') 
+ylabel('Channel(t)')
+
+subplot(2, 1, 2);
+plot(fA, abs(impulserespfreq));
+hold on;
+plot(fA, abs(audioMultiplexNoisyfft))
+title('Frequency domain of the inpulse response')
+xlabel('Frequency')
+ylabel('Magnitude')
+
+%% 1.4
+AudioDenoisedfreq = audioMultiplexNoisyfft ./ impulserespfreq;
+
+% create the de-noised audio signal in the time domain by performing an 
+% inverse Fourier Transform
+AudioDenoised = ifft(ifftshift(AudioDenoisedfreq)) * fs;
+
+% listen to the de-noised audio
+%sound(AudioDenoised, fs)
+
+% plot the frequency domain of the de-noised audio
+figure();
+plot(fA, abs(AudioDenoisedfreq));
+title('Frequency domain of the de-noised audio')
+xlabel('Frequency')
+ylabel('Magnitude')
+
+% plot the time domain of the de-noised audio
+figure();
+plot(t, AudioDenoised);
+title('Time domain of the de-noised audio')
+xlabel ('Time (s)'); 
+ylabel('Channel(t)');
+
+%% 1.5
+%remove frequency components to fully denoise the signal
+AudioDenoisedfreq() = 0;
+AudioDenoisedfreq() = 0;
+AudioDenoisedfreq() = 0;
+
+AudioDenoised2 = ifft(ifftshift(AudioDenoisedfreq)) * fs;
+
+
+% fully de-noised audio in time domain
+figure(14)
+subplot(2, 1, 1);
+plot(timevecA, AudioDenoised2);
+title('Time domain of the fully de-noised audio')
+xlabel ('Time (s)'); 
+ylabel('Channel(t)');
+
+% fully de-noised audio in frequency domain
+subplot(2, 1, 2);
+plot(fA, abs(AudioDenoised_frequency));
+title('Frequency domain of the fully de-noised audio')
+xlabel('Frequency')
+ylabel('Magnitude')
+
+
