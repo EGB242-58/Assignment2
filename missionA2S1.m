@@ -208,7 +208,7 @@ ylabel('Channel(t)');
 
 %% 1.5
 %remove frequency components to fully denoise the signal
-AudioDenoisedfreq() = 0;
+AudioDenoisedfreq() = 0;  %frequencys need to be added, not sure how many, just keep going until all other signals but the wanted ones are gone
 AudioDenoisedfreq() = 0;
 AudioDenoisedfreq() = 0;
 
