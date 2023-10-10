@@ -9,15 +9,9 @@ clear all; close all;
 load DataA2 audioMultiplexNoisy fs sid;
 
 % Begin writing your MATLAB solution below this line.
-%% Initialise workspace
-clear all; close all;
-load DataA2 audioMultiplexNoisy fs sid;
-
-% Begin writing your MATLAB solution below this line.
 %1.1 Time and frequency domains of audioMultiplexNoisy
 
 t0 = 0; T = 20; 
-samples = length(audioMultiplexNoisy);
 
 t = linspace(t0, t0+T, (fs*T) + 1);
 t(end) =[];
@@ -42,9 +36,11 @@ xlabel ('Frequency [kHz]');
 ylabel ('Magnitude');
 
 
-%% 2.2 demodulate
+%%1.2 demodulate
 fdemod1 = 8030; %frequency tuning in Hz,Audio signals within signal = 8030Hz, 24220Hz, 40250, 56050Hz, 72170Hz
-                %noisy frequencies within Multiplex audio frequencies = 5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz
+                %noisy frequencies within Multiplex audio frequencies =
+                %5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz = 2665, -2423,
+                %2385, -2264.
 low = 1000; %lowpass filter bounds Hz
 
 audioMultiplexdemod1 = (audioMultiplexNoisy .* cos(2*pi*-fdemod1*t)) + (audioMultiplexNoisy .* cos(2*pi*fdemod1*t)); %demodulate using modulation property and linerity property.
@@ -74,7 +70,7 @@ fdemod5 = 72170;
 
 audioMultiplexdemod5 = (audioMultiplexNoisy .* cos(2*pi*-fdemod5*t)) + (audioMultiplexNoisy .* cos(2*pi*fdemod5*t)); %demodulate using modulation property and linerity property.
 
-audioSignal5 = lowpass(audioMultiplexdemod5,low,fs);
+audioSignal5 = audioMultiplexdemod5; % lowpass(audioMultiplexdemod5,low,fs);
 
 
 %sound(audioSignal#,fs); 1-5 To play any of the Signals
@@ -155,9 +151,11 @@ xlabel ('Frequency [kHz]');
 ylabel ('Amplitude');
 xlim([-low/1000,low/1000]);
 
+
 %% 1.3
+samples = 1000;
 ts = 1/fs;
-impulse = [fs, zeros(1, samples -1)];
+impulse = [1/ts, zeros(1, (fs*T) -1)]; 
 
 impulseResp1 = channel(sid, impulse, fs);
 
@@ -208,9 +206,14 @@ ylabel('Channel(t)');
 
 %% 1.5
 %remove frequency components to fully denoise the signal
-AudioDenoisedfreq() = 0;  %frequencys need to be added, not sure how many, just keep going until all other signals but the wanted ones are gone
-AudioDenoisedfreq() = 0;
-AudioDenoisedfreq() = 0;
+AudioDenoisedfreq(5365) = 0;  %frequencys need to be added, not sure how many, just keep going until all other signals but the wanted ones are gone
+AudioDenoisedfreq(26643) = 0;
+AudioDenoisedfreq(37865) = 0;
+AudioDenoisedfreq(58491) = 0;
+AudioDenoisedfreq(74434) = 0;
+
+%2665, -2423, 2385, -2264
+%5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz
 
 AudioDenoised2 = ifft(ifftshift(AudioDenoisedfreq)) * fs;
 
@@ -226,8 +229,6 @@ ylabel('Channel(t)');
 % fully de-noised audio in frequency domain
 subplot(2, 1, 2);
 plot(fA, abs(AudioDenoised_frequency));
-title('Frequency domain of the fully de-noised audio')
-xlabel('Frequency')
-ylabel('Magnitude')
-
-
+title('Frequency domain of the fully de-noised audio');
+xlabel('Frequency');
+ylabel('Magnitude');
