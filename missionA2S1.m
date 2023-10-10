@@ -218,7 +218,6 @@ AudioDenoisedfreq(fA==-58491) = 0;
 AudioDenoisedfreq(fA==74434) = 0;
 AudioDenoisedfreq(fA==-74434) = 0;
 
-%2665, -2423, 2385, -2264
 %5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz
 
 AudioDenoised2 = ifft(ifftshift(AudioDenoisedfreq)) * fs;
@@ -246,4 +245,89 @@ FAudioSignal1 = lowpass(AudioDenoisedfreqdemod1,low,fs);
 
 FAudioSignal1fft = fftshift(fft(FAudioSignal1))/fs;
 
-%plot(fA, abs(FAudioSignal1fft));
+AudioDenoisedfreqdemod2 = (AudioDenoised2 .* cos(2*pi*-fdemod2*t)) + (AudioDenoised2 .* cos(2*pi*fdemod2*t)); %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod3 = (AudioDenoised2 .* cos(2*pi*-fdemod3*t)) + (AudioDenoised2 .* cos(2*pi*fdemod3*t)); %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod4 = (AudioDenoised2 .* cos(2*pi*-fdemod4*t)) + (AudioDenoised2 .* cos(2*pi*fdemod4*t)); %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod5 = (AudioDenoised2 .* cos(2*pi*-fdemod5*t)) + (AudioDenoised2 .* cos(2*pi*fdemod5*t)); %demodulate using modulation property and linerity property.
+
+FAudioSignal2 = lowpass(AudioDenoisedfreqdemod2,low,fs);
+FAudioSignal3 = lowpass(AudioDenoisedfreqdemod3,low,fs);
+FAudioSignal4 = lowpass(AudioDenoisedfreqdemod4,low,fs);
+FAudioSignal5 = lowpass(AudioDenoisedfreqdemod5,low,fs);
+
+FAudioSignal2fft = fftshift(fft(FAudioSignal2))/fs;
+FAudioSignal3fft = fftshift(fft(FAudioSignal3))/fs;
+FAudioSignal4fft = fftshift(fft(FAudioSignal4))/fs;
+FAudioSignal5fft = fftshift(fft(FAudioSignal5))/fs;
+
+%Time Domain Plot
+figure;
+subplot(5,1,1)
+plot(t,FAudioSignal1);
+title(sprintf('Time domain plot of the demodulated clean signal at %.2f kHz', fdemod1/1000));
+xlabel ('Time [sec]');
+ylabel ('Amplitude');
+
+subplot(5,1,2)
+plot(t,FAudioSignal2);
+title(sprintf('Time domain plot of the demodulated clean signal at %.2f kHz', fdemod2/1000));
+xlabel ('Time [sec]');
+ylabel ('Amplitude');
+
+subplot(5,1,3)
+plot(t,FAudioSignal3);
+title(sprintf('Time domain plot of the demodulated clean signal at %.2f kHz', fdemod3/1000));
+xlabel ('Time [sec]');
+ylabel ('Amplitude');
+
+subplot(5,1,4)
+plot(t,FAudioSignal4);
+title(sprintf('Time domain plot of the demodulated clean signal at %.2f kHz', fdemod4/1000));
+xlabel ('Time [sec]');
+ylabel ('Amplitude');
+
+subplot(5,1,5)
+plot(t,FAudioSignal5);
+title(sprintf('Time domain plot of the demodulated clean signal at %.2f kHz', fdemod5/1000));
+xlabel ('Time [sec]');
+ylabel ('Amplitude');
+
+%Frequency Domain Plot
+
+figure;
+subplot(5,1,1)
+plot(fA/1000,abs(FAudioSignal1fft));
+title(sprintf('Frequency domain plot of the demodulated clean signal at %.2f kHz', fdemod1/1000));
+xlabel ('Frequency [kHz]');
+ylabel ('Amplitude');
+xlim([-low/1000,low/1000]);
+
+subplot(5,1,2)
+plot(fA/1000,abs(FAudioSignal2fft));
+title(sprintf('Frequency domain plot of the demodulated clean signal at %.2f kHz', fdemod2/1000));
+xlabel ('Frequency [kHz]');
+ylabel ('Amplitude');
+xlim([-low/1000,low/1000]);
+
+subplot(5,1,3)
+plot(fA/1000,abs(FAudioSignal3fft));
+title(sprintf('Frequency domain plot of the demodulated clean signal at %.2f kHz', fdemod3/1000));
+xlabel ('Frequency [kHz]');
+ylabel ('Amplitude');
+xlim([-low/1000,low/1000]);
+
+subplot(5,1,4)
+plot(fA/1000,abs(FAudioSignal4fft));
+title(sprintf('Frequency domain plot of the demodulated clean signal at %.2f kHz', fdemod4/1000));
+xlabel ('Frequency [kHz]');
+ylabel ('Amplitude');
+xlim([-low/1000,low/1000]);
+
+subplot(5,1,5)
+plot(fA/1000,abs(FAudioSignal5fft));
+title(sprintf('Frequency domain plot of the demodulated clean signal at %.2f kHz', fdemod5/1000));
+xlabel ('Frequency [kHz]');
+ylabel ('Amplitude');
+xlim([-low/1000,low/1000]);
+
+%end
