@@ -206,11 +206,17 @@ ylabel('Channel(t)');
 
 %% 1.5
 %remove frequency components to fully denoise the signal
-AudioDenoisedfreq(5365) = 0;  %frequencys need to be added, not sure how many, just keep going until all other signals but the wanted ones are gone
-AudioDenoisedfreq(26643) = 0;
-AudioDenoisedfreq(37865) = 0;
-AudioDenoisedfreq(58491) = 0;
-AudioDenoisedfreq(74434) = 0;
+
+AudioDenoisedfreq(fA==5365) = 0;  %frequencys need to be added, not sure how many, just keep going until all other signals but the wanted ones are gone
+AudioDenoisedfreq(fA==-5365) = 0;
+AudioDenoisedfreq(fA==26643) = 0;
+AudioDenoisedfreq(fA==-26643) = 0;
+AudioDenoisedfreq(fA==37858) = 0;
+AudioDenoisedfreq(fA==-37858) = 0;
+AudioDenoisedfreq(fA==58491) = 0;
+AudioDenoisedfreq(fA==-58491) = 0;
+AudioDenoisedfreq(fA==74434) = 0;
+AudioDenoisedfreq(fA==-74434) = 0;
 
 %2665, -2423, 2385, -2264
 %5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz
@@ -221,14 +227,23 @@ AudioDenoised2 = ifft(ifftshift(AudioDenoisedfreq)) * fs;
 % fully de-noised audio in time domain
 figure(14)
 subplot(2, 1, 1);
-plot(timevecA, AudioDenoised2);
+plot(t, AudioDenoised2);
 title('Time domain of the fully de-noised audio')
 xlabel ('Time (s)'); 
 ylabel('Channel(t)');
 
 % fully de-noised audio in frequency domain
 subplot(2, 1, 2);
-plot(fA, abs(AudioDenoised_frequency));
+plot(fA, abs(AudioDenoisedfreq));
 title('Frequency domain of the fully de-noised audio');
 xlabel('Frequency');
 ylabel('Magnitude');
+
+
+AudioDenoisedfreqdemod1 = (AudioDenoised2 .* cos(2*pi*-fdemod1*t)) + (AudioDenoised2 .* cos(2*pi*fdemod1*t)); %demodulate using modulation property and linerity property.
+
+FAudioSignal1 = lowpass(AudioDenoisedfreqdemod1,low,fs);
+
+FAudioSignal1fft = fftshift(fft(FAudioSignal1))/fs;
+
+%plot(fA, abs(FAudioSignal1fft));
