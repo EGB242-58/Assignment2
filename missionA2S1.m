@@ -41,7 +41,7 @@ fdemod1 = 8030; %frequency tuning in Hz,Audio signals within signal = 8030Hz, 24
                 %noisy frequencies within Multiplex audio frequencies =
                 %5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz = 2665, -2423,
                 %2385, -2264.
-low = 1000; %lowpass filter bounds Hz
+low = 5000; %lowpass filter bounds Hz
 
 audioMultiplexdemod1 = (audioMultiplexNoisy .* cos(2*pi*-fdemod1*t)) + (audioMultiplexNoisy .* cos(2*pi*fdemod1*t)); %demodulate using modulation property and linerity property.
 
@@ -185,7 +185,8 @@ AudioDenoisedfreq = audioMultiplexNoisyfft ./ impulserespfreq;
 
 % create the de-noised audio signal in the time domain by performing an 
 % inverse Fourier Transform
-AudioDenoised = ifft(ifftshift(AudioDenoisedfreq)) * fs;
+x1= ones(1, (T*fs));
+AudioDenoised = (ifft(ifftshift(AudioDenoisedfreq)) * fs);
 
 % listen to the de-noised audio
 %sound(AudioDenoised, fs)
@@ -218,6 +219,7 @@ AudioDenoisedfreq(fA==-58491) = 0;
 AudioDenoisedfreq(fA==74434) = 0;
 AudioDenoisedfreq(fA==-74434) = 0;
 
+%2665, -2423, 2385, -2264
 %5365Hz, 26643Hz, 37865Hz, 58491Hz, 74434Hz
 
 AudioDenoised2 = ifft(ifftshift(AudioDenoisedfreq)) * fs;
@@ -239,16 +241,16 @@ xlabel('Frequency');
 ylabel('Magnitude');
 
 
-AudioDenoisedfreqdemod1 = (AudioDenoised2 .* cos(2*pi*-fdemod1*t)) + (AudioDenoised2 .* cos(2*pi*fdemod1*t)); %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod1 = (AudioDenoised2 .* cos(2*pi*-fdemod1*t)) + (AudioDenoised2 .* cos(2*pi*fdemod1*t))-x1; %demodulate using modulation property and linerity property.
 
 FAudioSignal1 = lowpass(AudioDenoisedfreqdemod1,low,fs);
 
 FAudioSignal1fft = fftshift(fft(FAudioSignal1))/fs;
 
-AudioDenoisedfreqdemod2 = (AudioDenoised2 .* cos(2*pi*-fdemod2*t)) + (AudioDenoised2 .* cos(2*pi*fdemod2*t)); %demodulate using modulation property and linerity property.
-AudioDenoisedfreqdemod3 = (AudioDenoised2 .* cos(2*pi*-fdemod3*t)) + (AudioDenoised2 .* cos(2*pi*fdemod3*t)); %demodulate using modulation property and linerity property.
-AudioDenoisedfreqdemod4 = (AudioDenoised2 .* cos(2*pi*-fdemod4*t)) + (AudioDenoised2 .* cos(2*pi*fdemod4*t)); %demodulate using modulation property and linerity property.
-AudioDenoisedfreqdemod5 = (AudioDenoised2 .* cos(2*pi*-fdemod5*t)) + (AudioDenoised2 .* cos(2*pi*fdemod5*t)); %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod2 = (AudioDenoised2 .* cos(2*pi*-fdemod2*t)) + (AudioDenoised2 .* cos(2*pi*fdemod2*t))-x1; %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod3 = (AudioDenoised2 .* cos(2*pi*-fdemod3*t)) + (AudioDenoised2 .* cos(2*pi*fdemod3*t))-x1; %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod4 = (AudioDenoised2 .* cos(2*pi*-fdemod4*t)) + (AudioDenoised2 .* cos(2*pi*fdemod4*t))-x1; %demodulate using modulation property and linerity property.
+AudioDenoisedfreqdemod5 = (AudioDenoised2 .* cos(2*pi*-fdemod5*t)) + (AudioDenoised2 .* cos(2*pi*fdemod5*t))-x1; %demodulate using modulation property and linerity property.
 
 FAudioSignal2 = lowpass(AudioDenoisedfreqdemod2,low,fs);
 FAudioSignal3 = lowpass(AudioDenoisedfreqdemod3,low,fs);
@@ -330,4 +332,3 @@ xlabel ('Frequency [kHz]');
 ylabel ('Amplitude');
 xlim([-low/1000,low/1000]);
 
-%end
