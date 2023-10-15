@@ -4,7 +4,7 @@
 % Modify the below variables to contain the student numbers of you and your
 % group members. If you have less than three members, use 12345678 for the
 % remaining student numbers.
-sid1 = 12345678;    % Mitchell Jackson
+sid1 = 9689281;    % Mitchell Jackson
 sid2 = 11107804;    % Henry Kelso
 sid3 = 11246502;    % Andrew Kennard
 
