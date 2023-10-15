@@ -11,143 +11,95 @@ load DataA2 imagesReceived;
 % Begin writing your MATLAB solution below this line.
 
 %% Section 3
-%Grabbing the first image from the pixel stream and converting it
-%to a 480 by 640 matrix (2D)
-im1d = reshape(imagesReceived(1,:), 480, 640);
 
-%% Displaying the first raw image
-%displaying im1d, the first image
+% Grabbing the first image from the pixel stream and converting it
+% to a 480 by 640 matrix (2D)
+im1D = imagesReceived(1,:);
+im2D = reshape(im1D, 480, 640);
+
+%% 3.1 Displaying the first raw image
+
+% Displaying im2D, the first image
 figure();
-imshow(im1d);
+imshow(im2D);
+imwrite(im2D, 'raw_image.png')
 
-%% Creating and viewing the time and frequency vectors
+%% 3.2 Creating and viewing the time and frequency vectors
 
-samples = length(imagesReceived); % the total length of each image
-fs = 1000; %number of pixels per second
-T = samples/fs; %The time it takes to get all the pixels needed for an image
+samples = length(imagesReceived);
+fs = 1000; % pixels per second
+T = samples/fs; % total time taken for image signal to be received
 
-t = linspace(0,T, samples+1); t(end) = []; % Created a time Vector
-f = linspace(-fs/2, fs/2, samples+1); f(end) = []; % Created a frequency Vector
+t = linspace(0,T, samples+1); t(end) = []; % time vector
+f = linspace(-fs/2, fs/2, samples+1); f(end) = []; % frequency vector
 
-%Graph displaying the noise found in the matrix imagesRecieved
-figure();
-plot(t, imagesReceived(1,:));
-xlabel('Time [s]')
-xlim([0, 300]);
+% Plotting im1D image in the time domain
+margin = 10; % margin for time axis to make start and end values more visible
+
+figure
+plot(t, imagesReceived(1,:))
+title('Image Signal in the Time Domain')
+xlabel('Time (s)')
+xlim([-margin, T+margin])
 ylabel('Amplitude')
-title('The noise in the Time domain of the matrix imagesRecieved')
 
-% changing imagesReceived from being viewed in the time domain to the
-% frequency domain by using Fast Fourier Transfer function
-Image1 = fftshift(fft(imagesReceived(1,:)))/fs;
+% Converting im1D to the frequency domain with the Fast Fourier Transform
+Im1D = fftshift(fft(im1D))/fs;
 
-%displaying Image1 using the frequency domain
-figure()
-plot(f,abs(Image1) )
-xlabel('Frequency')
+% Displaying Im1D in the frequency domain
+figure
+tiledlayout(2,1)
+
+nexttile
+plot(f,abs(Im1D))
+title('Magnitude Spectrum of Image Signal')
+xlabel('Frequency (Hz)')
 ylabel('Amplitude')
-title('The noise in the Frequency domain of the new created matrix Image1')
 
-%% Finding a Filter to remove the noise
-%% o+jw = s
-s = 1j.*2.*pi.*f;
+nexttile
+plot(f,angle(Im1D))
+title('Phase Spectrum of Image Signal')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rads)')
 
-%Passive values
-R1 = 1200; %Ohms
-R2 = 1000; %Ohms
-C1 = 10*10^-6; %Faradays
-C2 = 4.7*10^-6; %Faradays
+%% 3.3 Filter modelling
 
-%Passive filters ??Maybe its right
-pass1in = (C2.* C1.* R1.* s) + (C2.* C1.* R2.* s) + C1 + C2;
-pass1out = (C2.* C1.* R2.* s) + C1;
-Passfilter1 = pass1out./pass1in;
-pass2in = (C1.*(C2.*(R1 + R2).*s + 1)+ C2);
-pass2out = C1+C2;
-Passfilter2 = pass2out./pass2in;
+% Component values
+R1 = 1.2e3;     % Ohms
+R2 = 1e3;       % Ohms
+C1 = 10e-6;     % Farads
+C2 = 4.7e-6;    % Farads
+R = 820;        % Ohms
+C = 1e-6;       % Farads
 
-%Active values
-C = 1*10^-6; %Faradays
-R = 820; %Ohms
+s = tf('s'); % helper variable for rational expressions of TFs
 
-%Active Filters
-vout1 = 1/ (R.*C).^2;
-vin1 = s.^2 + (2.*s)./(R.*C) + 1/(R.*C).^2;
-vout2 = s.^2;
-vin2 = s.^2 + (2.*s)./(R.*C) + 1/(R.*C).^2;
-ActFilter1 = vout1./vin1;
-ActFilter2 = vout2./vin2;
-%plotting Frequency domain of clean image
-CleanImage1 = Image1 .* ActFilter1;
-figure, plot(f,abs(CleanImage1));
-xlabel('Frequency');
-ylabel('Amplitude');
-title('Frequency Domain of the first Filtered Image');
-%reshaping from string to 480 by 640 and displaying image
+% Filter transfer functions
+H_p1 = ( s*R1 ) / ( (s^2)*C2*R1*(R1+R2) + s*((C2/C1)*(R1+R2)+R1) + 1/C1 );
+H_p2 = ( 1/C2 ) / ( s*( (s^2)*C1*R1*R2 + s*(R2+R1*C1/C2) + 1/C2 + R2 ) );
+H_a1 = ( 1/((R*C)^2) ) / ( s^2 + s*2/(R*C) + 1/((R*C)^2) );
+H_a2 = ( s^2 ) / ( s^2 + s*2/(R*C) + 1/((R*C)^2) );
 
-CleanIm1d = ifft(ifftshift(CleanImage1)) * fs; % was moved into Freq Domain 
-%forgraphing, needs to be ing time for image
+%ltiview(H_a1)
 
-cleanIm1d_new = reshape(CleanIm1d, [480,640]);
-figure;
-imshow(real(cleanIm1d_new));
-title('De-Noised Image 1');
-figure;
-plot(t,abs(CleanIm1d));
-xlim([0,300]);
-xlabel('Time');
-ylabel('Amplitude');
-title('Time Domain of the first Filtered Image');
+Im1Dfiltered = Im1D .* H_a1;
 
-%passive filters test
-pCleanImage1 = Image1 .* Passfilter1;
-figure, plot(f,abs(pCleanImage1));
-xlabel('Frequency');
-ylabel('Amplitude');
-title('Frequency Domain of the first Filtered Image pass');
-%reshaping from string to 480 by 640 and displaying image
-%CleanIm1d = ifft(ifftshift(CleanImage1)) * fs;
-pCleanIm1d = ifft(ifftshift(pCleanImage1)) * fs; % was moved into Freq Domain 
-%forgraphing, needs to be ing time for image
+figure
+tiledlayout(2,1)
 
-pcleanIm1d_new = reshape(pCleanIm1d, [480,640]);
-figure;
-imshow(real(pcleanIm1d_new));
-title('De-Noised Image 1 pass');
-figure;
-plot(t,abs(pCleanIm1d));
-xlim([0,300]);
-xlabel('Time');
-ylabel('Amplitude');
-title('Time Domain of the first Filtered Image pass');
-%%end passive filter test
+nexttile
+plot(f,abs(Im1D))
+title('Magnitude Spectrum of Image Signal')
+xlabel('Frequency (Hz)')
+ylabel('Amplitude')
 
+nexttile
+plot(f,angle(Im1D))
+title('Phase Spectrum of Image Signal')
+xlabel('Frequency (Hz)')
+ylabel('Phase (rads)')
 
-% the clipping at a amplitude of zero tells us that there are values 
-%cleanImg that are in the imaginary region.
-
-% now for the rest of the images
-Image2 = fftshift(fft(imagesReceived(2,:)))/fs;
-Image3 = fftshift(fft(imagesReceived(3,:)))/fs;
-Image4 = fftshift(fft(imagesReceived(4,:)))/fs;
-%image 2
-Clean2 = Image2 .* ActFilter1;
-CleanIm2d = ifft(ifftshift(Clean2)) * fs;
-cleanIm2d_new = reshape(CleanIm2d, [480,640]);
-figure;
-imshow(real(cleanIm2d_new));
-title('De-Noised Image 2');
-%image 3
-Clean3 = Image3 .* ActFilter1;
-CleanIm3d = ifft(ifftshift(Clean3)) * fs;
-cleanIm3d_new = reshape(CleanIm3d, [480,640]);
-figure;
-imshow(real(cleanIm3d_new));
-title('De-Noised Image 3');
-%image 4
-Clean4 = Image4 .* ActFilter1;
-CleanIm4d = ifft(ifftshift(Clean4)) * fs;
-cleanIm4d_new = reshape(CleanIm4d, [480,640]);
-figure;
-imshow(real(cleanIm4d_new));
-title('De-Noised Image 4');
+im1Dfiltered = lsim(H_a1, im1D, t);
+im2Dfiltered = reshape(im1Dfiltered, 480, 640);
+figure
+imshow(im2Dfiltered)
