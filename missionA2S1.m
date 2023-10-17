@@ -153,7 +153,7 @@ xlim([-low/1000,low/1000]);
 
 
 %% 1.3
-samples = 1000;
+
 ts = 1/fs;
 impulse = [1/ts, zeros(1, (fs*T) -1)]; 
 
