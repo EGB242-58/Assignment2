@@ -148,7 +148,7 @@ end
 
 %% Extra fun code to normalise filtered images and see edge artefacts
 
-im1Dfiltered = lsim(H_a2, im1D, t);
+im1Dfiltered = lsim(H_a2, im1D, t); % Replace H_a2 with desired tf
 im1Dnorm = ((im1Dfiltered - mean(im1Dfiltered)) ./ (6 * std(im1Dfiltered))) + 0.5;
 im2Dnorm = reshape(im1Dnorm, 480, 640);
 figure
